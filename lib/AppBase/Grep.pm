@@ -107,7 +107,7 @@ sub grep {
             if ($opt_quiet || $opt_count) {
                 $num_matches++;
             } else {
-                $code_print->(1);
+                $code_print->($use_color);
             }
         } else {
             next unless $opt_invert;
