@@ -32,8 +32,8 @@ Examples of CLI utilities that are based on this: <prog:abgrep>,
 Why? For grepping lines from files or stdin, <prog:abgrep> is no match for the
 standard grep (or its many alternatives): it's orders of magnitude slower and
 currently has fewer options. But AppBase::Grep is a quick way to create
-grep-like utilities that greps from a custom sources but have common features
-with the standard grep.
+grep-like utilities that grep from a custom sources but have common/standard
+grep features.
 
 Compared to the standard grep, AppBase::Grep also has these unique features:
 
