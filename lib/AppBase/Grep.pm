@@ -9,6 +9,13 @@ use warnings;
 
 our %SPEC;
 
+our %Colors = (
+    label     => "\e[35m",   # magenta
+    separator => "\e[36m",   # cyan
+    linum     => "\e[32m",   # green
+    match     => "\e[1;31m", # bold red
+);
+
 $SPEC{grep} = {
     v => 1.1,
     summary => 'A base for grep-like CLI utilities',
@@ -53,6 +60,12 @@ _
             cmdline_aliases => {silent=>{}, q=>{}},
             tags => ['category:general-output-control'],
         },
+
+        line_number => {
+            schema => ['true*'],
+            cmdline_aliases => {n=>{}},
+            tags => ['category:output-line-prefix-control'],
+        },
         # XXX max_count
         # word_regexp (-w) ?
         # line_regexp (-x) ?
@@ -68,6 +81,7 @@ sub grep {
     my $opt_invert = $args{invert_match};
     my $opt_count  = $args{count};
     my $opt_quiet  = $args{quiet};
+    my $opt_linum  = $args{line_number};
     my $pat        = $opt_ci ? qr/$args{pattern}/i : qr/$args{pattern}/;
 
     my $color = $args{color} // 'auto';
@@ -81,24 +95,54 @@ sub grep {
     }
     my $source = $args{_source};
 
-    my $linum = 0;
     my $num_matches = 0;
-    my ($line, $label);
+    my ($line, $label, $linum);
 
     my $code_print = sub {
-        my $highlight = shift;
-        if ($highlight) {
-            $line =~ s/($pat)/\e[1;31m$1\e[0m/g;
+        if (defined $label && length $label) {
+            if ($use_color) {
+                print "$Colors{label}$label\e[0m$Colors{separator}:\e[0m";
+            } else {
+                print $label, ":";
+            }
+        }
+
+        if ($opt_linum) {
+            if ($use_color) {
+                print "$Colors{linum}$linum\e[0m$Colors{separator}:\e[0m";
+            } else {
+                print $linum, ":";
+            }
+        }
+
+        if ($use_color && !$opt_invert) {
+            $line =~ s/($pat)/$Colors{match}$1\e[0m/g;
             print $line;
         } else {
             print $line;
         }
     };
 
+    my $prevlabel;
     while (1) {
         ($line, $label) = $source->();
         last unless defined $line;
-        $linum++;
+
+        $label //= '';
+
+        if ($opt_linum) {
+            if (!defined $prevlabel) {
+                $prevlabel = $label;
+                $linum = 1;
+            } else {
+                if ($label ne $prevlabel) {
+                    $prevlabel = $label;
+                    $linum = 1;
+                } else {
+                    $linum++;
+                }
+            }
+        }
 
         my $is_match = 0;
         if ($line =~ $pat) {
@@ -107,14 +151,14 @@ sub grep {
             if ($opt_quiet || $opt_count) {
                 $num_matches++;
             } else {
-                $code_print->($use_color);
+                $code_print->();
             }
         } else {
             next unless $opt_invert;
             if ($opt_quiet || $opt_count) {
                 $num_matches++;
             } else {
-                $code_print->(0);
+                $code_print->();
             }
         }
     }
