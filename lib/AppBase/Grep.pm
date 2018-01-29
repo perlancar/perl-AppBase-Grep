@@ -23,17 +23,17 @@ $SPEC{grep} = {
 
 This routine provides a base for grep-like CLI utilities. It accepts coderef as
 source of lines, which in the actual utilities can be from files or other
-sources. It provides common options like `-i`, `-v`, highlighting, and so on.
+sources. It provides common options like `-i`, `-v`, `-c`, color highlighting,
+and so on.
 
-Examples of CLI utilities that are based on this: <prog:abgrep>, <prog:grepcoin>
-(from <pm:App::CryptoCurrencyUtils>).
+Examples of CLI utilities that are based on this: <prog:abgrep>,
+<prog:grep-coin> (from <pm:App::CryptoCurrencyUtils>).
 
 Why? For grepping lines from files or stdin, <prog:abgrep> is no match for the
 standard grep (or its many alternatives): it's orders of magnitude slower and
 currently has fewer options. But AppBase::Grep is a quick way to create
 grep-like utilities that greps from a custom sources but have common features
-with the standard grep like the `-i` option, `-v`, `-c`, color highlighting, and
-so on.
+with the standard grep.
 
 Compared to the standard grep, AppBase::Grep also has these unique features:
 

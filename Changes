@@ -1,3 +1,10 @@
+0.004   2018-01-30 (PERLANCAR)
+
+	- No functional changes.
+
+	- [doc] Add more description.
+
+
 0.003   2018-01-29 (PERLANCAR)
 
 	- Allow multiple patterns, add option --all (not in GNU grep).
