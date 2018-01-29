@@ -29,8 +29,13 @@ _
     args => {
         pattern => {
             schema => 're*',
-            req => 1,
             pos => 0,
+        },
+        regexps => {
+            'x.name.is_plural' => 1,
+            'x.name.singular' => 'regexp',
+            schema => ['array*', of=>'re*'],
+            cmdline_aliases => {e=>{code=>sub { $_[0]{regexps} //= []; push @{$_[0]{regexps}}, $_[1] }}},
         },
 
         ignore_case => {
@@ -42,6 +47,11 @@ _
             summary => 'Invert the sense of matching',
             schema => 'bool*',
             cmdline_aliases => {v=>{}},
+            tags => ['category:matching-control'],
+        },
+        all => { # not in grep
+            summary => 'Require all patterns to match, instead of just one',
+            schema => 'true*',
             tags => ['category:matching-control'],
         },
         count => {
@@ -81,12 +91,19 @@ sub grep {
     my $opt_count  = $args{count};
     my $opt_quiet  = $args{quiet};
     my $opt_linum  = $args{line_number};
-    my $pat        = $opt_ci ? qr/$args{pattern}/i : qr/$args{pattern}/;
+
+    my (@str_patterns, @re_patterns);
+    for my $p ( grep {defined} $args{pattern}, @{ $args{regexps} // [] }) {
+        push @str_patterns, $p;
+        push @re_patterns , $opt_ci ? qr/$p/i : qr/$p/;
+    }
+    return [400, "Please specify at least one pattern"] unless @re_patterns;
+    my $re_pat = join('|', @str_patterns);
+    $re_pat = $opt_ci ? qr/$re_pat/i : qr/$re_pat/;
 
     my $color = $args{color} //
         (defined $ENV{COLOR} ? ($ENV{COLOR} ? 'always' : 'never') : undef) //
         'auto';
-
     my $use_color;
     if ($color eq 'always') {
         $use_color = 1;
@@ -95,7 +112,11 @@ sub grep {
     } else {
         $use_color = (-t STDOUT);
     }
+
     my $source = $args{_source};
+
+    my $logic = 'or';
+    $logic = 'and' if $args{all};
 
     my $num_matches = 0;
     my ($line, $label, $linum);
@@ -117,8 +138,8 @@ sub grep {
             }
         }
 
-        if ($use_color && !$opt_invert) {
-            $line =~ s/($pat)/$Colors{match}$1\e[0m/g;
+        if ($use_color) {
+            $line =~ s/($re_pat)/$Colors{match}$1\e[0m/g;
             print $line;
         } else {
             print $line;
@@ -146,9 +167,26 @@ sub grep {
             }
         }
 
-        my $is_match = 0;
-        if ($line =~ $pat) {
+        my $is_match;
+        if ($logic eq 'or') {
+            $is_match = 0;
+            for my $re (@re_patterns) {
+                if ($line =~ $re) {
+                    $is_match = 1;
+                    last;
+                }
+            }
+        } else {
             $is_match = 1;
+            for my $re (@re_patterns) {
+                unless ($line =~ $re) {
+                    $is_match = 0;
+                    last;
+                }
+            }
+        }
+
+        if ($is_match) {
             next if $opt_invert;
             if ($opt_quiet || $opt_count) {
                 $num_matches++;
