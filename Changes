@@ -1,3 +1,11 @@
+0.002   2018-01-29 (PERLANCAR)
+
+	- [ux] Observe COLOR environment variable (note: this behavior is
+	  not in GNU grep).
+
+	- Display label & line number, add option --line-number (-n).
+
+
 0.001   2018-01-26 (PERLANCAR)
 
         - First release.
