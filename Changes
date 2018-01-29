@@ -1,3 +1,8 @@
+0.003   2018-01-29 (PERLANCAR)
+
+	- Allow multiple patterns, add option --all (not in GNU grep).
+
+
 0.002   2018-01-29 (PERLANCAR)
 
 	- [ux] Observe COLOR environment variable (note: this behavior is
