@@ -52,7 +52,6 @@ _
         },
         color => {
             schema => ['str*', in=>[qw/never always auto/]],
-            default => 'auto',
             tags => ['category:general-output-control'],
         },
         quiet => {
@@ -84,7 +83,10 @@ sub grep {
     my $opt_linum  = $args{line_number};
     my $pat        = $opt_ci ? qr/$args{pattern}/i : qr/$args{pattern}/;
 
-    my $color = $args{color} // 'auto';
+    my $color = $args{color} //
+        (defined $ENV{COLOR} ? ($ENV{COLOR} ? 'always' : 'never') : undef) //
+        'auto';
+
     my $use_color;
     if ($color eq 'always') {
         $use_color = 1;
@@ -173,3 +175,12 @@ sub grep {
 
 1;
 # ABSTRACT:
+
+
+=head1 ENVIRONMENT
+
+=head2 COLOR
+
+Boolean. If set to true, will set default C<--color> to C<always> instead of
+C<auto>. If set to false, will set default C<--color> to C<never> instead of
+C<auto>. This behavior is not in GNU grep.
