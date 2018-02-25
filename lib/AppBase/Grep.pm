@@ -107,6 +107,31 @@ sub grep {
     my $opt_quiet  = $args{quiet};
     my $opt_linum  = $args{line_number};
 
+    if ($ENV{COLOR_THEME}) {
+        require Color::Theme::Util;
+        my $theme = Color::Theme::Util::get_color_theme(
+            {module_prefixes => [qw/AppBase::Grep::ColorTheme Generic::ColorTheme/]}, $ENV{COLOR_THEME});
+        require Color::Theme::Util::ANSI;
+        if ($theme->{colors}{label}) {
+            for my $c (keys %Colors) {
+                $Colors{$c} = Color::Theme::Util::ANSI::theme_color_to_ansi($theme, $c);
+            }
+        } elsif ($theme->{colors}{color1}) {
+            my %map = (
+                label     => 'color1',
+                separator => 'color2',
+                linum     => 'color3',
+                match     => 'color4',
+            );
+            for my $c (keys %Colors) {
+                $Colors{$c} = Color::Theme::Util::ANSI::theme_color_to_ansi(
+                    $theme, $map{$c});
+            }
+        } else {
+            warn "Unsuitable color theme '$ENV{COLOR_THEME}', ignored";
+        }
+    }
+
     my (@str_patterns, @re_patterns);
     for my $p ( grep {defined} $args{pattern}, @{ $args{regexps} // [] }) {
         push @str_patterns, $p;
@@ -237,3 +262,7 @@ sub grep {
 Boolean. If set to true, will set default C<--color> to C<always> instead of
 C<auto>. If set to false, will set default C<--color> to C<never> instead of
 C<auto>. This behavior is not in GNU grep.
+
+=head2 COLOR_THEME
+
+String.
