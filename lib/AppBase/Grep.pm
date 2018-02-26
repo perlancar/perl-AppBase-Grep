@@ -265,4 +265,5 @@ C<auto>. This behavior is not in GNU grep.
 
 =head2 COLOR_THEME
 
-String.
+String. Will search color themes in C<AppBase::Grep::ColorTheme::*> as well as
+C<Generic::ColorTheme::*> modules.
