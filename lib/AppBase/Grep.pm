@@ -159,7 +159,7 @@ sub grep {
     $logic = 'and' if $args{all};
 
     my $num_matches = 0;
-    my ($line, $label, $linum);
+    my ($line, $label, $linum, $chomp);
 
     my $code_print = sub {
         if (defined $label && length $label) {
@@ -184,12 +184,17 @@ sub grep {
         } else {
             print $line;
         }
+        print "\n" if $chomp;
     };
 
     my $prevlabel;
     while (1) {
-        ($line, $label) = $source->();
+        ($line, $label, $chomp) = $source->();
         last unless defined $line;
+
+        chomp($line) if $chomp;
+
+        use DD; dd {line=>$line, pats=>\@re_patterns};
 
         $label //= '';
 
