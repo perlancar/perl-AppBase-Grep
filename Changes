@@ -1,3 +1,11 @@
+0.006   2020-01-03  Released-By: PERLANCAR; Urgency: medium
+
+	- Accept (line, label, chomp) from source instead of just (line,
+	  label).
+
+	- [doc] Document more about COLOR_THEME.
+
+
 0.005   2018-02-26  Released-By: PERLANCAR
 
 	- Add color theme support.

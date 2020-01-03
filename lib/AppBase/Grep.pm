@@ -194,8 +194,6 @@ sub grep {
 
         chomp($line) if $chomp;
 
-        use DD; dd {line=>$line, pats=>\@re_patterns};
-
         $label //= '';
 
         if ($opt_linum) {
