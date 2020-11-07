@@ -43,13 +43,13 @@ Compared to the standard grep, AppBase::Grep also has these unique features:
 _
     args => {
         pattern => {
-            schema => 're*',
+            schema => 'str*',
             pos => 0,
         },
         regexps => {
             'x.name.is_plural' => 1,
             'x.name.singular' => 'regexp',
-            schema => ['array*', of=>'re*'],
+            schema => ['array*', of=>'str*'],
             cmdline_aliases => {e=>{code=>sub { $_[0]{regexps} //= []; push @{$_[0]{regexps}}, $_[1] }}},
         },
 
@@ -62,6 +62,19 @@ _
             summary => 'Invert the sense of matching',
             schema => 'bool*',
             cmdline_aliases => {v=>{}},
+            tags => ['category:matching-control'],
+        },
+        dash_prefix_inverts => {
+            summary => 'When given pattern that starts with dash "-FOO", make it to mean "^(?!.*FOO)"',
+            schema => 'bool*',
+            description => <<'_',
+
+This is a convenient way to search for lines that do not match a pattern.
+Instead of using `-v` to invert the meaning of all patterns, this option allows
+you to invert individual pattern using the dash prefix, which is also used by
+Google search and a few other search engines.
+
+_
             tags => ['category:matching-control'],
         },
         all => { # not in grep
@@ -134,6 +147,9 @@ sub grep {
 
     my (@str_patterns, @re_patterns);
     for my $p ( grep {defined} $args{pattern}, @{ $args{regexps} // [] }) {
+        if ($args{dash_prefix_inverts} && $p =~ s/\A-//) {
+            $p = "^(?!.*$p)";
+        }
         push @str_patterns, $p;
         push @re_patterns , $opt_ci ? qr/$p/i : qr/$p/;
     }
