@@ -1,6 +1,8 @@
 package AppBase::Grep;
 
+# AUTHORITY
 # DATE
+# DIST
 # VERSION
 
 use 5.010001;
@@ -8,13 +10,6 @@ use strict;
 use warnings;
 
 our %SPEC;
-
-our %Colors = (
-    label     => "\e[35m",   # magenta
-    separator => "\e[36m",   # cyan
-    linum     => "\e[32m",   # green
-    match     => "\e[1;31m", # bold red
-);
 
 $SPEC{grep} = {
     v => 1.1,
@@ -90,6 +85,7 @@ _
         },
         color => {
             schema => ['str*', in=>[qw/never always auto/]],
+            default => 'auto',
             tags => ['category:general-output-control'],
         },
         quiet => {
@@ -112,6 +108,9 @@ _
     },
 };
 sub grep {
+    require ColorThemeUtil::ANSI;
+    require Module::Load::Util;
+
     my %args = @_;
 
     my $opt_ci     = $args{ignore_case};
@@ -120,30 +119,11 @@ sub grep {
     my $opt_quiet  = $args{quiet};
     my $opt_linum  = $args{line_number};
 
-    if ($ENV{COLOR_THEME}) {
-        require Color::Theme::Util;
-        my $theme = Color::Theme::Util::get_color_theme(
-            {module_prefixes => [qw/AppBase::Grep::ColorTheme Generic::ColorTheme/]}, $ENV{COLOR_THEME});
-        require Color::Theme::Util::ANSI;
-        if ($theme->{colors}{label}) {
-            for my $c (keys %Colors) {
-                $Colors{$c} = Color::Theme::Util::ANSI::theme_color_to_ansi($theme, $c);
-            }
-        } elsif ($theme->{colors}{color1}) {
-            my %map = (
-                label     => 'color1',
-                separator => 'color2',
-                linum     => 'color3',
-                match     => 'color4',
-            );
-            for my $c (keys %Colors) {
-                $Colors{$c} = Color::Theme::Util::ANSI::theme_color_to_ansi(
-                    $theme, $map{$c});
-            }
-        } else {
-            warn "Unsuitable color theme '$ENV{COLOR_THEME}', ignored";
-        }
-    }
+    my $ct = $ENV{APPBASE_GREP_COLOR_THEME} // 'Light';
+
+    require Module::Load::Util;
+    my $ct_obj = Module::Load::Util::instantiate_class_with_optional_args(
+        {ns_prefixes=>['ColorTheme::Search','ColorTheme','']}, $ct);
 
     my (@str_patterns, @re_patterns);
     for my $p ( grep {defined} $args{pattern}, @{ $args{regexps} // [] }) {
@@ -157,17 +137,12 @@ sub grep {
     my $re_pat = join('|', @str_patterns);
     $re_pat = $opt_ci ? qr/$re_pat/i : qr/$re_pat/;
 
-    my $color = $args{color} //
-        (defined $ENV{COLOR} ? ($ENV{COLOR} ? 'always' : 'never') : undef) //
-        'auto';
-    my $use_color;
-    if ($color eq 'always') {
-        $use_color = 1;
-    } elsif ($color eq 'never') {
-        $use_color = 0;
-    } else {
-        $use_color = (-t STDOUT);
-    }
+    my $color = $args{color} // 'auto';
+    my $use_color =
+        ($color eq 'always' ? 1 : $color eq 'never' ? 0 : undef) //
+        (defined $ENV{NO_COLOR} ? 0 : undef) //
+        ($ENV{COLOR} ? 1 : defined($ENV{COLOR}) ? 0 : undef) //
+        (-t STDOUT);
 
     my $source = $args{_source};
 
@@ -177,10 +152,11 @@ sub grep {
     my $num_matches = 0;
     my ($line, $label, $linum, $chomp);
 
+    my $ansi_highlight = ColorThemeUtil::ANSI::item_color_to_ansi($ct_obj->get_item_color('highlight'));
     my $code_print = sub {
         if (defined $label && length $label) {
             if ($use_color) {
-                print "$Colors{label}$label\e[0m$Colors{separator}:\e[0m";
+                print ColorThemeUtil::ANSI::item_color_to_ansi($ct_obj->get_item_color('location')) . $label . "\e[0m:"; # XXX separator color?
             } else {
                 print $label, ":";
             }
@@ -188,14 +164,14 @@ sub grep {
 
         if ($opt_linum) {
             if ($use_color) {
-                print "$Colors{linum}$linum\e[0m$Colors{separator}:\e[0m";
+                print ColorThemeUtil::ANSI::item_color_to_ansi($ct_obj->get_item_color('location')) . $linum . "\e[0m:";
             } else {
                 print $linum, ":";
             }
         }
 
         if ($use_color) {
-            $line =~ s/($re_pat)/$Colors{match}$1\e[0m/g;
+            $line =~ s/($re_pat)/$ansi_highlight$1\e[0m/g;
             print $line;
         } else {
             print $line;
@@ -275,6 +251,10 @@ sub grep {
 
 
 =head1 ENVIRONMENT
+
+=head2 NO_COLOR
+
+If set, will disable color. Takes precedence over L</COLOR> but not C<--color>.
 
 =head2 COLOR
 
