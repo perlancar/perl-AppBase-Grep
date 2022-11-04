@@ -289,3 +289,12 @@ C<auto>. This behavior is not in GNU grep.
 
 String. Will search color themes in C<AppBase::Grep::ColorTheme::*> as well as
 C<Generic::ColorTheme::*> modules.
+
+
+=head1 SEE ALSO
+
+Some scripts that use us as a base: L<abgrep> (from L<App::abgrep>),
+L<grep-email> (from L<App::grep::email>), L<grep-url> (from L<App::grep::url>),
+L<pdfgrep> (a.k.a. L<grep-from-pdf>, from L<App::PDFUtils>).
+
+L<Regexp::From::String> is related to C<--dash-prefix-inverts> option.
