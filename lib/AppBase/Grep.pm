@@ -115,14 +115,52 @@ _
         _source => {
             schema => 'code*',
             tags => ['hidden'],
+            description => <<'_',
+
+Code to produce lines of text to grep form. Required.
+
+Will be called with these arguments:
+
+    ()
+
+Should return the following:
+
+    ($line, $label, $chomp)
+
+Where `$line` is the line (with newline ending, unless `$chomp` is true),
+`$label` is source label (e.g. filename without line number if text source is
+from files), and `$chomp` is boolean that can be set to true to indicate that
+line is already chomped and should not be chomped again.
+
+_
         },
         _highlight_regexp => {
             schema => 're*',
             tags => ['hidden'],
+            description => <<'_',
+
+Regexp pattern to capture each pattern for highlighting. Optional.
+
+_
         },
         _filter_code => {
             schema => 'code*',
             tags => ['hidden'],
+            description => <<'_',
+
+Custom filtering. If set, then `pattern` and `regexps` arguments are not
+required and lines of text will be filtered by this code. Used e.g. for grepping
+custom stuffs, e.g. email address or URL from lines of text instead of plain
+string or regexp patterns.
+
+Will be called for each line of text with these arguments:
+
+    ($line, \%args)
+
+where `$line` is the line of text and `%args` are the arguments given to the
+`grep()` function.
+
+_
         },
 
     },
