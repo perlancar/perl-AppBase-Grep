@@ -32,6 +32,7 @@ sub _find_files {
         follow => $follow,
         wanted => sub {
             if (-f $_) {
+                no warnings 'once';
                 my $path = "$File::Find::dir/$_";
                 push @$ary, $path;
             }

@@ -1,13 +1,13 @@
 package AppBase::Grep;
 
+use 5.010001;
+use strict;
+use warnings;
+
 # AUTHORITY
 # DATE
 # DIST
 # VERSION
-
-use 5.010001;
-use strict;
-use warnings;
 
 our %SPEC;
 
@@ -201,7 +201,7 @@ sub grep {
         ($color eq 'always' ? 1 : $color eq 'never' ? 0 : undef) //
         (defined $ENV{NO_COLOR} ? 0 : undef) //
         ($ENV{COLOR} ? 1 : defined($ENV{COLOR}) ? 0 : undef) //
-        (-t STDOUT);
+        (-t STDOUT); ## no critic: InputOutput::ProhibitInteractiveTest
 
     my $source = $args{_source};
 
