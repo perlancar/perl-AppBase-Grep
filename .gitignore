@@ -2,3 +2,4 @@ AppBase-Grep-*
 .build
 *~
 nytprof*
+.DS_Store
