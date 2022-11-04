@@ -38,10 +38,12 @@ Compared to the standard grep, AppBase::Grep also has these unique features:
 _
     args => {
         pattern => {
+            summary => 'Specify *string* to search for',
             schema => 'str*',
             pos => 0,
         },
         regexps => {
+            summary => 'Specify additional *regexp pattern* to search for',
             'x.name.is_plural' => 1,
             'x.name.singular' => 'regexp',
             schema => ['array*', of=>'str*'],
@@ -49,6 +51,7 @@ _
         },
 
         ignore_case => {
+            summary => 'If set to true, will search case-insensitively',
             schema => 'bool*',
             cmdline_aliases => {i=>{}},
             tags => ['category:matching-control'],
@@ -84,17 +87,20 @@ _
             tags => ['category:general-output-control'],
         },
         color => {
+            summary => 'Specify when to show color (never, always, or auto/when interactive)',
             schema => ['str*', in=>[qw/never always auto/]],
             default => 'auto',
             tags => ['category:general-output-control'],
         },
         quiet => {
+            summary => 'Do not print matches, only return appropriate exit code',
             schema => ['true*'],
             cmdline_aliases => {silent=>{}, q=>{}},
             tags => ['category:general-output-control'],
         },
 
         line_number => {
+            summary => 'Show line number along with matches',
             schema => ['true*'],
             cmdline_aliases => {n=>{}},
             tags => ['category:output-line-prefix-control'],
