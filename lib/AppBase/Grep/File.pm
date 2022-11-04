@@ -2,6 +2,7 @@ package AppBase::Grep::File;
 
 use strict;
 use warnings;
+use Log::ger;
 
 our %argspecs_files = (
     files => {
@@ -23,6 +24,21 @@ our %argspecs_files = (
     },
 );
 
+sub _find_files {
+    my ($dir, $ary, $follow) = @_;
+
+    require File::Find;
+    File::Find::find({
+        follow => $follow,
+        wanted => sub {
+            if (-f $_) {
+                my $path = "$File::Find::dir/$_";
+                push @$ary, $path;
+            }
+        },
+    }, $dir);
+}
+
 # will set $args->{_source}
 sub set_source_arg {
     my $args = shift;
@@ -38,6 +54,20 @@ sub set_source_arg {
         }
     }
 
+    if ($args->{recursive} || $args->{dereference_recursive}) {
+        my $i = -1;
+        while (++$i < @files) {
+            if (-d $files[$i]) {
+                my $more_files = [];
+                my $follow = $args->{dereference_recursive} ? 1:0;
+                _find_files($files[$i], $more_files, $follow);
+                splice @files, $i, 1, @$more_files;
+                $i += @$more_files-1;
+            }
+        }
+    }
+
+    my ($fh, $file);
     my $show_label = 0;
     if (!@files) {
         $file = "(stdin)";
