@@ -4,6 +4,11 @@ use strict;
 use warnings;
 use Log::ger;
 
+# AUTHORITY
+# DATE
+# DIST
+# VERSION
+
 our %argspecs_files = (
     files => {
         'x.name.is_plural' => 1,
