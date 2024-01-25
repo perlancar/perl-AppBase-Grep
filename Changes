@@ -1,3 +1,9 @@
+0.012   2024-01-25  Released-By: PERLANCAR; Urgency: medium
+
+        - Add options --files-with-matches (-l) and --files-without-match
+          (-L).
+
+
 0.011   2023-07-22  Released-By: PERLANCAR; Urgency: medium
 
         - [bugfix] [dist] Forgot to add $VERSION to AppBase::Grep::File.
