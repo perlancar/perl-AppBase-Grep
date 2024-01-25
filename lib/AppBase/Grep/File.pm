@@ -85,7 +85,8 @@ sub set_source_arg {
     $args->{_source} = sub {
       READ_LINE:
         {
-            if (!defined $fh) {
+            # open another file
+            if (!defined($fh) || $_[0]) {
                 return unless @files;
                 $file = shift @files;
                 log_trace "Opening $file ...";
